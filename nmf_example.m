@@ -15,6 +15,7 @@ E2 = A2.A;
 
 E=E1+E2;
 
+%E=E(1:1000,:);
 %%Remove Stop Words
 %Find common words:
 comm_word_str='the,of,and,at,a,to,in,is,you,that,it,he,was,for,on,are,as,with,his,they,I,I''m,at,be,this,have,from,or,one,had,by,word,but,not,what,all,were,we,when,your,can,said,me,i,ha,haha,hahahaha,lol,RT,';
@@ -48,42 +49,42 @@ err=100000;
 
 while (abs(norm(AA-W*H,'fro')-err)>.01 && curriter<maxiter )
     
+    err=norm((AA-W*H),'fro');
+    disp(['Error: ' num2str(err)]);
     %Solve Solve: W'WH = W'A for H
     %H=pinv(W)*pinv(W')*W'*AA;
-    H=inv(W'*W)*W'*AA;
+    H=matrixInverse(W'*W)*(W'*AA);
     
     %Set H to non negative elements
     H=H.*(H>0);
     
     %Solve HHTWT=HAT for W
     %Wt=pinv(H')*pinv(H)*H*(AA');
-    Wt=inv(H*H')*H*AA';
+    Wt=matrixInverse(H*H')*(H*AA');
     
     %Set W to nonnegative elements
     W=(Wt.*(Wt>0))';
     
     %Calculate and display current error
-    err=norm((AA-W*H),'fro');
-    disp(['Error: ' num2str(err)]);
     curriter=curriter+1;
     
 end
 
 %Put labels on W and H
 WW = putCol(noVal(putAdj(E,sparse(W))),kStr);  % Put labels on WW.
-figure; spy(WW > 0.005);                        % Show documents that are strongly tied to topics.
+figure; spy(WW > 0.01);                        % Show documents that are strongly tied to topics.
 xlabel('Topic ID');  ylabel('Document ID');
 
 HH = putRow(noVal(putAdj(E,sparse(H))),kStr);  % Put labels on H.
 
-figure; spy(HH.' > 0.005);                       % Show entities that are strongly tied to topics.
+figure; spy(HH.' > 0.01);                       % Show entities that are strongly tied to topics.
 xlabel('Topic ID');  ylabel('Entity');
 
 %Print out popular words
 for i=1:k
     disp(['Popular words in Topic: ' num2str(i)]);
     colnum=sprintf('%0.2d,',i);
-    disp( Col(HH(colnum,:) > 0.005) );
+    disp( Col(HH(colnum,:) > 0.01) );
 end
 
 
